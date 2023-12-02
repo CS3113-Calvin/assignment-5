@@ -68,4 +68,5 @@ public:
     float const get_bottom_bound() const { return m_bottom_bound; }
 
     bool const get_is_on_ladder(glm::vec3 position) const;
+    int const get_current_tile(glm::vec3 position) const;
 };

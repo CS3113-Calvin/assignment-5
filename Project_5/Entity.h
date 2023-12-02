@@ -85,6 +85,9 @@ class Entity {
 
     GLuint m_texture_id;
 
+    // Health
+    unsigned int m_health = 3;
+
     // ————— METHODS ————— //
     Entity();
     ~Entity();

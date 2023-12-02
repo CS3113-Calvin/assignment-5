@@ -1,10 +1,10 @@
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
-#define LEVEL1_WIDTH 14
-#define LEVEL1_HEIGHT 8
-#define LEVEL1_LEFT_EDGE 5.0f
-#define VIEW_SCALE 0.7f
+#define LEVEL1_LEFT_EDGE 0.0f
+#define LEVEL2_BOTTOM_EDGE -37.0f
+#define LEVEL3_TOP_EDGE 0.0f
+#define VIEW_SCALE 0.7f  // scale camera view
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -106,7 +106,8 @@ void initialise() {
     g_level_a    = new LevelA();
     g_level_b    = new LevelB();
     g_level_c    = new LevelC();
-    switch_to_scene(g_level_menu);
+    // switch_to_scene(g_level_menu);  // todo: change this back to menu
+    switch_to_scene(g_level_a);
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -215,6 +216,24 @@ void update() {
 
     g_accumulator = delta_time;
 
+    // Update scene if player crosses bounds
+    if (g_current_scene == g_level_a) {
+        // left edge
+        if (g_current_scene->m_state.player->get_position().x < LEVEL1_LEFT_EDGE) {
+            switch_to_scene(g_level_b);
+        }
+    } else if (g_current_scene == g_level_b) {
+        // bottom edge
+        if (g_current_scene->m_state.player->get_position().y < LEVEL2_BOTTOM_EDGE) {
+            switch_to_scene(g_level_c);
+        }
+    } else if (g_current_scene == g_level_c) {
+        // top edge
+        if (g_current_scene->m_state.player->get_position().y > LEVEL3_TOP_EDGE) {
+            switch_to_scene(g_level_a);
+        }
+    }
+
     // ————— PLAYER CAMERA ————— //
     g_view_matrix = glm::mat4(1.0f);
 
@@ -223,8 +242,8 @@ void update() {
     if (g_current_scene != g_level_menu) {
         std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
         std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
-        float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 36.0f - (16.0f * VIEW_SCALE));
-        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -36.0f + (16.0f * VIEW_SCALE), 0 - (16.0f * VIEW_SCALE));
+        float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
+        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (16.0f * VIEW_SCALE), 0 - (16.0f * VIEW_SCALE));
 
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-x_clamp, -y_clamp, 0));
         // if (g_current_scene->m_state.player->get_position().x > LEVEL1_LEFT_EDGE) {
