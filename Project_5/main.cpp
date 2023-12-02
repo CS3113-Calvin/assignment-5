@@ -110,23 +110,32 @@ void initialize() {
     g_player->set_movement(glm::vec3(0.0f));
     g_player->set_speed(3.5f);
     g_player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    g_player->m_texture_id = Utility::load_texture("assets/images/george_0.png");
-    
-    // Walking
-    g_player->m_walking[g_player->LEFT]  = new int[4] { 1, 5, 9,  13 };
-    g_player->m_walking[g_player->RIGHT] = new int[4] { 3, 7, 11, 15 };
-    g_player->m_walking[g_player->UP]    = new int[4] { 2, 6, 10, 14 };
-    g_player->m_walking[g_player->DOWN]  = new int[4] { 0, 4, 8,  12 };
+    g_player->m_texture_id = Utility::load_texture("assets/images/DarkSamurai (64x64).png");
 
-    g_player->m_animation_indices = g_player->m_walking[g_player->RIGHT];  // start George looking left
-    g_player->m_animation_frames = 4;
-    g_player->m_animation_index  = 0;
-    g_player->m_animation_time   = 0.0f;
-    g_player->m_animation_cols   = 4;
-    g_player->m_animation_rows   = 4;
-    g_player->set_height(0.9f);
-    g_player->set_width(0.9f);
-    g_player->set_scale(1.3f);
+    // Walking
+    g_player->m_animations[g_player->WALK] = new int[8]{14, 15, 16, 17, 18, 19, 20};
+    // g_player->m_animations[g_player->LEFT] = new int[4] { 1, 5, 9, 13 };
+    // g_player->m_animations[g_player->RIGHT] = new int[4]{3, 7, 11, 15};
+    // g_player->m_animations[g_player->UP]    = new int[4]{2, 6, 10, 14};
+    // g_player->m_animations[g_player->DOWN]  = new int[4]{0, 4, 8, 12};
+
+    g_player->m_animations[g_player->IDLE]     = new int[8]{0, 1, 2, 3, 4, 5, 6, 7};
+    g_player->m_animations[g_player->ATTACK_1] = new int[4]{28, 29, 30, 31};
+    g_player->m_animations[g_player->ATTACK_2] = new int[4]{42, 43, 44, 45};
+    g_player->m_animations[g_player->JUMP]     = new int[4]{56, 57, 58, 59};
+    g_player->m_animations[g_player->FALL]      = new int[4]{70, 71, 72, 73};
+    g_player->m_animations[g_player->HIT]      = new int[2]{84, 85};
+    g_player->m_animations[g_player->DIE]      = new int[14]{98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111};
+
+    g_player->m_animation_indices = g_player->m_animations[g_player->WALK];  // start George looking left
+    g_player->m_animation_frames  = 4;
+    g_player->m_animation_index   = 0;
+    g_player->m_animation_time    = 0.0f;
+    g_player->m_animation_cols    = 14;
+    g_player->m_animation_rows    = 8;
+    g_player->set_height(1.2f);
+    g_player->set_width(0.6f);
+    g_player->set_scale(2.8f);
     g_player->m_jumping_power = 8.0f;
 
     // ————— LEVEL SETUP ————— //
@@ -205,16 +214,16 @@ void process_input() {
     if (g_current_scene != g_level_menu) {
         if (key_state[SDL_SCANCODE_LEFT]) {
             g_current_scene->m_state.player->move_left();
-            g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_walking[g_current_scene->m_state.player->LEFT];
+            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->LEFT];
         } else if (key_state[SDL_SCANCODE_RIGHT]) {
             g_current_scene->m_state.player->move_right();
-            g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_walking[g_current_scene->m_state.player->RIGHT];
+            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->RIGHT];
         } else if (key_state[SDL_SCANCODE_UP]) {
             g_current_scene->m_state.player->move_up();
-            g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_walking[g_current_scene->m_state.player->UP];
+            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->UP];
         } else if (key_state[SDL_SCANCODE_DOWN]) {
             g_current_scene->m_state.player->move_down();
-            g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_walking[g_current_scene->m_state.player->DOWN];
+            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->DOWN];
         }
 
         // ————— NORMALISATION ————— //
@@ -270,8 +279,8 @@ void update() {
     // float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, -36.0f, 36.0f);
     // float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -36.0f, 36.0f);
     if (g_current_scene != g_level_menu) {
-        // std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
-        // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
+        std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
+        std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
         float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
         float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 

@@ -19,10 +19,14 @@ class Entity {
     bool m_is_alive  = true;
 
     // ––––– ANIMATION ––––– //
-    int* m_animation_right = NULL;  // move to the right
-    int* m_animation_left  = NULL;  // move to the left
-    int* m_animation_up    = NULL;  // move upwards
-    int* m_animation_down  = NULL;  // move downwards
+    int* m_animation_walk     = NULL;  // move to the right
+    int* m_animation_idle     = NULL;
+    int* m_animation_attack_1 = NULL;
+    int* m_animation_attack_2 = NULL;
+    int* m_animation_jump     = NULL;
+    int* m_animation_fall     = NULL;
+    int* m_animation_hit      = NULL;
+    int* m_animation_die      = NULL;
 
     // ––––– PHYSICS (GRAVITY) ––––– //
     glm::vec3 m_position;
@@ -34,6 +38,7 @@ class Entity {
     glm::vec3 m_movement;
     glm::mat4 m_model_matrix;
     float     m_scale = 1.0f;
+    int       m_flip  = 0;  // 0 = no flip, 1 = horizontal flip, 2 = vertical flip, 3 = both flips
 
     // ————— ENEMY AI ————— //
     EntityType m_entity_type;
@@ -52,17 +57,25 @@ class Entity {
 
     // ————— STATIC VARIABLES ————— //
     static const int SECONDS_PER_FRAME = 4;
-    static const int LEFT              = 0,
-                     RIGHT             = 1,
-                     UP                = 2,
-                     DOWN              = 3;
+    static const int WALK              = 0,
+                     IDLE              = 1,
+                     ATTACK_1          = 2,
+                     ATTACK_2          = 3,
+                     JUMP              = 4,
+                     FALL              = 5,
+                     HIT               = 6,
+                     DIE               = 7;
 
     // ————— ANIMATION ————— //
-    int** m_walking = new int* [4] {
-        m_animation_left,
-            m_animation_right,
-            m_animation_up,
-            m_animation_down
+    int** m_animations = new int* [8] {
+        m_animation_walk,
+            m_animation_idle,
+            m_animation_attack_1,
+            m_animation_attack_2,
+            m_animation_jump,
+            m_animation_fall,
+            m_animation_hit,
+            m_animation_die
     };
 
     int m_animation_frames = 0,
@@ -105,10 +118,64 @@ class Entity {
     void const check_collision_y(Map* map);
     void const check_collision_x(Map* map);
 
-    void move_left() { m_movement.x = -1.0f; };
-    void move_right() { m_movement.x = 1.0f; };
-    void move_up() { m_movement.y = 1.0f; };
-    void move_down() { m_movement.y = -1.0f; };
+    void idle() {
+        m_movement.x        = 0.0f;
+        m_movement.y        = 0.0f;
+        m_animation_indices = m_animations[IDLE];
+    }
+
+    void attack_1() {
+        m_movement.x        = 0.0f;
+        m_movement.y        = 0.0f;
+        m_animation_indices = m_animations[ATTACK_1];
+    }
+
+    void attack_2() {
+        m_movement.x        = 0.0f;
+        m_movement.y        = 0.0f;
+        m_animation_indices = m_animations[ATTACK_2];
+    }
+
+    void jump() {
+        m_movement.y        = 1.0f;
+        m_animation_indices = m_animations[JUMP];
+    }
+
+    void fall() {
+        m_movement.y        = -1.0f;
+        m_animation_indices = m_animations[FALL];
+    }
+
+    void hit() {
+        m_movement.x        = 0.0f;
+        m_movement.y        = 0.0f;
+        m_animation_indices = m_animations[HIT];
+    }
+
+    void die() {
+        m_movement.x        = 0.0f;
+        m_movement.y        = 0.0f;
+        m_animation_indices = m_animations[DIE];
+    }
+
+    void move_left() {
+        m_movement.x        = -1.0f;
+        m_flip              = 1;
+        m_animation_indices = m_animations[WALK];
+    };
+    void move_right() {
+        m_movement.x        = 1.0f;
+        m_flip              = 0;
+        m_animation_indices = m_animations[WALK];
+    };
+    void move_up() {
+        m_movement.y        = 1.0f;
+        m_animation_indices = m_animations[WALK];
+    };
+    void move_down() {
+        m_movement.y        = -1.0f;
+        m_animation_indices = m_animations[WALK];
+    };
 
     void ai_activate(Entity* player);
     void ai_walk();
@@ -120,19 +187,19 @@ class Entity {
     void deactivate() { m_is_active = false; };
 
     // ————— GETTERS ————— //
-    EntityType const   get_entity_type() const { return m_entity_type; };
-    AIType const       get_ai_type() const { return m_ai_type; };
-    AIState const      get_ai_state() const { return m_ai_state; };
-    glm::vec3 const    get_position() const { return m_position; };
-    glm::vec3 const    get_movement() const { return m_movement; };
-    glm::vec3 const    get_velocity() const { return m_velocity; };
-    glm::vec3 const    get_acceleration() const { return m_acceleration; };
-    float const        get_jumping_power() const { return m_jumping_power; };
-    float const        get_speed() const { return m_speed; };
-    int const          get_width() const { return m_width; };
-    int const          get_height() const { return m_height; };
-    float const        get_scale() const { return m_scale; };
-    bool const         get_is_alive() const { return m_is_alive; };
+    EntityType const get_entity_type() const { return m_entity_type; };
+    AIType const     get_ai_type() const { return m_ai_type; };
+    AIState const    get_ai_state() const { return m_ai_state; };
+    glm::vec3 const  get_position() const { return m_position; };
+    glm::vec3 const  get_movement() const { return m_movement; };
+    glm::vec3 const  get_velocity() const { return m_velocity; };
+    glm::vec3 const  get_acceleration() const { return m_acceleration; };
+    float const      get_jumping_power() const { return m_jumping_power; };
+    float const      get_speed() const { return m_speed; };
+    int const        get_width() const { return m_width; };
+    int const        get_height() const { return m_height; };
+    float const      get_scale() const { return m_scale; };
+    bool const       get_is_alive() const { return m_is_alive; };
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };

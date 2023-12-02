@@ -26,6 +26,7 @@ struct GameState {
     Map    *map;
     Entity *player;
     Entity *enemies;
+    Entity *collectables;
     // GLuint  fontsheet_texture_id;
 
     // ————— AUDIO ————— //

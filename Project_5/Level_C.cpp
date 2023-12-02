@@ -16,7 +16,10 @@ void LevelC::initialize(Entity* player) {
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_C_DATA, map_texture_id, 1.0f, 12, 32);
 
     m_state.player = player;
-    m_state.player->set_position(glm::vec3(player->get_position().x, 36, 0));
+    m_state.player->set_position(glm::vec3(player->get_position().x, -1.0f, 0));
+
+    // Treasure chest (9, -19)
+
 }
 
 void LevelC::update(float delta_time) {
