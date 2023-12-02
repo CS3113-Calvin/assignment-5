@@ -124,7 +124,7 @@ void Map::render(ShaderProgram *program) {
 
 bool Map::is_solid(glm::vec3 position, float *penetration_x, float *penetration_y) {
     // Transparent tileids are not solid
-    std::set<int> transparent = {0, 32, 33, 34, 35, 38, 44, 45, 46, 47, 56, 57, 58, 59, 64, 65, 66, 67, 68, 68, 77, 78, 79, 97, 106, 108, 109, 110, 118, 120, 121, 122, 123, 125, 126, 127, 134, 147, 148, 228, 229, 230, 240, 241, 242, 252, 264, 276, 288};
+    std::set<int> transparent = {0, 32, 33, 34, 35, 38, 44, 45, 46, 47, 56, 57, 58, 59, 64, 65, 66, 67, 68, 77, 78, 79, 84, 96, 97, 98, 106, 108, 109, 110, 111, 118, 120, 121, 122, 123, 125, 126, 127, 132, 133, 134, 147, 148, 169, 181, 228, 229, 230, 240, 241, 242, 252, 264, 276, 288};
 
     // The penetration between the map and the object
     // The reason why these are pointers is because we want to reassign values
@@ -169,6 +169,15 @@ bool const Map::get_is_on_ladder(glm::vec3 position) const {
     int tile = get_current_tile(position);
 
     if (ladders.find(tile) != ladders.end()) return true;
+    return false;
+};
+
+bool const Map::get_is_in_water(glm::vec3 position) const {
+    std::set<int> water = {84, 96, 97, 98, 108, 109, 110, 111, 120, 121, 122, 123, 132, 133, 134, 169, 181};
+
+    int tile = get_current_tile(position);
+
+    if (water.find(tile) != water.end()) return true;
     return false;
 };
 

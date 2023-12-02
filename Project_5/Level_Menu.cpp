@@ -8,8 +8,8 @@ LevelMenu::~LevelMenu() {
     std::cout << "LevelMenu::~LevelMenu()" << std::endl;
 }
 
-void LevelMenu::initialise() {
-    std::cout << "LevelMenu::initialise()" << std::endl;
+void LevelMenu::initialize(Entity* player) {
+    std::cout << "LevelMenu::initialize()" << std::endl;
     // GLuint map_texture_id = Utility::load_texture("assets/images/Cavernas_by_Adam_Saltsman.png");
     // GLuint map_texture_id = Utility::load_texture("assets/images/tileset.png");
     // m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_DATA, map_texture_id, 1.0f, 12, 32);

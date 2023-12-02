@@ -5,3 +5,6 @@ AlignConsecutiveAssignments:
   Enabled: true
   AlignCompound: true
 AlignConsecutiveDeclarations: true
+ArrayInitializerAlignmentStyle: None
+BreakArrays: false
+Cpp11BracedListStyle: true

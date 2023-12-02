@@ -173,13 +173,25 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
     // If player is on ladder, allow them to move up and down
     if (map->get_is_on_ladder(m_position)) {
         // print movement
-        std::cout << "movement: " << m_movement.x << ", " << m_movement.y << std::endl;
+        std::cout << "ladder movement: " << m_movement.x << ", " << m_movement.y << std::endl;
         if (m_movement.y > 0) {
             m_velocity.y = m_movement.y * m_speed;
         } else if (m_movement.y < 0) {
             m_velocity.y = m_movement.y * m_speed;
         } else {
             m_velocity.y = 0;
+        }
+    } else if (map->get_is_in_water(m_position)) {
+        // print movement
+        std::cout << "water movement: " << m_movement.x << ", " << m_movement.y << std::endl;
+        if (m_movement.y > 0) {
+            m_velocity.y = m_movement.y * m_speed * 0.5f;
+        } else if (m_movement.y < 0) {
+            m_velocity.y = m_movement.y * m_speed * 0.5f;
+        } else {
+            if (!m_is_jumping) {  // drag player down when not jumping
+                m_velocity += m_acceleration * 0.1f * delta_time;
+            }
         }
     } else {
         // m_velocity.y = 0;

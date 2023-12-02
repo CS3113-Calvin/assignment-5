@@ -44,7 +44,7 @@ class Scene {
     GameState m_state;
 
     // ————— METHODS ————— //
-    virtual void initialise()                   = 0;
+    virtual void initialize(Entity *player)     = 0;
     virtual void update(float delta_time)       = 0;
     virtual void render(ShaderProgram *program) = 0;
 

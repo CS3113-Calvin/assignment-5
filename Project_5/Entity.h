@@ -43,7 +43,7 @@ class Entity {
     float m_width  = 1;
     float m_height = 1;
 
-    unsigned int lives = 1;
+    float invulnerability_time = 1.0f * (2.0f / 3.0f);
 
    public:
     // patrol bounds
@@ -85,8 +85,9 @@ class Entity {
 
     GLuint m_texture_id;
 
-    // Health
-    unsigned int m_health = 3;
+    // Hit status
+    bool  m_hit                  = false;                 // Has the player been hit by an enemy?
+    float m_invulnerability_time = invulnerability_time;  // How long until the player can be hit again?
 
     // ————— METHODS ————— //
     Entity();
@@ -132,7 +133,6 @@ class Entity {
     int const          get_height() const { return m_height; };
     float const        get_scale() const { return m_scale; };
     bool const         get_is_alive() const { return m_is_alive; };
-    unsigned int const get_lives() const { return lives; };
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
@@ -148,5 +148,4 @@ class Entity {
     void const set_height(float new_height) { m_height = new_height; };
     void const set_scale(float new_scale) { m_scale = new_scale; };
     void const set_is_alive(bool new_is_alive) { m_is_alive = new_is_alive; };
-    void const set_lives(unsigned int new_lives) { lives = new_lives; };
 };

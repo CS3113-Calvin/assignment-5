@@ -3,7 +3,7 @@
 #define FIXED_TIMESTEP 0.0166666f
 #define LEVEL1_LEFT_EDGE 0.0f
 #define LEVEL2_BOTTOM_EDGE -37.0f
-#define LEVEL3_TOP_EDGE 0.0f
+#define LEVEL3_TOP_EDGE 1.0f
 #define VIEW_SCALE 0.7f  // scale camera view
 
 #ifdef _WINDOWS
@@ -50,11 +50,13 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 const float MILLISECONDS_IN_SECOND = 1000.0;
 
 // ————— GLOBAL VARIABLES ————— //
-Scene*     g_current_scene;
-LevelMenu* g_level_menu;
-LevelA*    g_level_a;
-LevelB*    g_level_b;
-LevelC*    g_level_c;
+Scene*       g_current_scene;
+LevelMenu*   g_level_menu;
+LevelA*      g_level_a;
+LevelB*      g_level_b;
+LevelC*      g_level_c;
+unsigned int g_player_lives = 3;
+Entity*      g_player;
 
 SDL_Window* g_display_window;
 bool        g_game_is_running = true;
@@ -67,10 +69,10 @@ float g_accumulator    = 0.0f;
 
 void switch_to_scene(Scene* scene) {
     g_current_scene = scene;
-    g_current_scene->initialise();
+    g_current_scene->initialize(g_player);
 }
 
-void initialise() {
+void initialize() {
     // ————— VIDEO ————— //
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     g_display_window = SDL_CreateWindow("The Caverns Below!",
@@ -101,13 +103,39 @@ void initialise() {
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
 
+    // Set up player
+    g_player = new Entity();
+    g_player->set_entity_type(PLAYER);
+    g_player->set_position(glm::vec3(36.0f, -15.0f, 0.0f));
+    g_player->set_movement(glm::vec3(0.0f));
+    g_player->set_speed(3.5f);
+    g_player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    g_player->m_texture_id = Utility::load_texture("assets/images/george_0.png");
+    
+    // Walking
+    g_player->m_walking[g_player->LEFT]  = new int[4] { 1, 5, 9,  13 };
+    g_player->m_walking[g_player->RIGHT] = new int[4] { 3, 7, 11, 15 };
+    g_player->m_walking[g_player->UP]    = new int[4] { 2, 6, 10, 14 };
+    g_player->m_walking[g_player->DOWN]  = new int[4] { 0, 4, 8,  12 };
+
+    g_player->m_animation_indices = g_player->m_walking[g_player->RIGHT];  // start George looking left
+    g_player->m_animation_frames = 4;
+    g_player->m_animation_index  = 0;
+    g_player->m_animation_time   = 0.0f;
+    g_player->m_animation_cols   = 4;
+    g_player->m_animation_rows   = 4;
+    g_player->set_height(0.9f);
+    g_player->set_width(0.9f);
+    g_player->set_scale(1.3f);
+    g_player->m_jumping_power = 8.0f;
+
     // ————— LEVEL SETUP ————— //
     g_level_menu = new LevelMenu();
     g_level_a    = new LevelA();
     g_level_b    = new LevelB();
     g_level_c    = new LevelC();
     // switch_to_scene(g_level_menu);  // todo: change this back to menu
-    switch_to_scene(g_level_a);
+    switch_to_scene(g_level_b);
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -119,6 +147,8 @@ void initialise() {
     // ————— BLENDING ————— //
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    std::cout << "Game initialized!" << std::endl;
 }
 
 void process_input() {
@@ -229,9 +259,9 @@ void update() {
         }
     } else if (g_current_scene == g_level_c) {
         // top edge
-        if (g_current_scene->m_state.player->get_position().y > LEVEL3_TOP_EDGE) {
-            switch_to_scene(g_level_a);
-        }
+        // if (g_current_scene->m_state.player->get_position().y > LEVEL3_TOP_EDGE) {
+        //     switch_to_scene(g_level_a);
+        // }
     }
 
     // ————— PLAYER CAMERA ————— //
@@ -240,10 +270,10 @@ void update() {
     // float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, -36.0f, 36.0f);
     // float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -36.0f, 36.0f);
     if (g_current_scene != g_level_menu) {
-        std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
-        std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
+        // std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
+        // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
         float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
-        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (16.0f * VIEW_SCALE), 0 - (16.0f * VIEW_SCALE));
+        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-x_clamp, -y_clamp, 0));
         // if (g_current_scene->m_state.player->get_position().x > LEVEL1_LEFT_EDGE) {
@@ -279,7 +309,7 @@ void shutdown() {
 
 // ————— GAME LOOP ————— //
 int main(int argc, char* argv[]) {
-    initialise();
+    initialize();
 
     while (g_game_is_running) {
         process_input();
