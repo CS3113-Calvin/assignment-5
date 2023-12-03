@@ -23,8 +23,6 @@ void LevelA::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     m_state.player = player;
 
     /* Enemies' stuff */
-    GLuint enemy_texture_id = Utility::load_texture("assets/images/soph.png");
-
     m_state.enemies = new Entity[ENEMY_COUNT];
     m_state.enemies[0].set_position(glm::vec3(21.0f, -20.0f, 0.0f));
 
