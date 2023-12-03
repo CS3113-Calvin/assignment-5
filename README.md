@@ -1,13 +1,15 @@
-# Project 4
+# Project 5
 
 Game description:
 
-* Simple platformer game where the player must defeat 3 enemies to win.
+* Simple platformer game with three levels.
+* Find the heart to win!
 
 Attributions:
 * [Background music: Malicious](https://incompetech.com/music/royalty-free/music.html) ("Malicious" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/)
-* [Jump sound effect]()
+* [Jump sound effect](https://opengameart.org/content/jump-landing-sound)
 * [Game map tilesheet: Cavernas](https://adamatomic.itch.io/cavernas)
+* [Enemy sprite](https://pixramen.itch.io/2d-action-platformer-sci-fi-enemy-xeno-grunt)
 * [Tile map editor: LDTK](https://ldtk.io/)
 
 ## [Original Description](https://github.com/sebastianromerocruz/CS3113-material/blob/9d267e2686d8bd8c0877c2063eacdc6eacb73b16/assignments/project_5.md)
