@@ -37,7 +37,7 @@ void LevelA::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     // Mix_PlayMusic(m_state.bgm, -1);
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
 
-    m_state.jump_sfx = Mix_LoadWAV("assets/audio/bounce.wav");
+    m_state.jump_sfx = Mix_LoadWAV("assets/audio/jumpland.wav");
 }
 
 void LevelA::update(float delta_time) {

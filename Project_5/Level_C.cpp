@@ -37,6 +37,8 @@ void LevelC::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     // enemies
     m_state.enemies = new Entity[ENEMY_COUNT];
     m_state.enemies[0].set_position(glm::vec3(13.0f, -23.0f, 0.0f));
+
+    m_state.jump_sfx = Mix_LoadWAV("assets/audio/jumpland.wav");
 }
 
 void LevelC::update(float delta_time) {
