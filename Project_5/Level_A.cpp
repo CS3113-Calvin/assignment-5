@@ -49,10 +49,10 @@ void LevelA::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
 }
 
 void LevelA::update(float delta_time) {
-    m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
+    m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, NULL, 0, m_state.map);
 
     for (int i = 0; i < ENEMY_COUNT; i++) {
-        m_state.enemies[i].update(delta_time, m_state.player, 0, 0, m_state.map);
+        m_state.enemies[i].update(delta_time, m_state.player, 0, 0, NULL, 0, m_state.map);
     }
 }
 

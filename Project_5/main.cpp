@@ -49,17 +49,22 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 
+enum GameStatus { RUNNING,
+                  WIN,
+                  LOSE };
+
 // ————— GLOBAL VARIABLES ————— //
-Scene*       g_current_scene;
-LevelMenu*   g_level_menu;
-LevelA*      g_level_a;
-LevelB*      g_level_b;
-LevelC*      g_level_c;
-unsigned int g_player_lives = 3;
-Entity*      g_player;
-GLuint       g_heart_spritesheet;
-Entity*      g_hearts;  // rendering hearts on screen
-GLuint       g_fontsheet_texture_id;
+Scene*     g_current_scene;
+LevelMenu* g_level_menu;
+LevelA*    g_level_a;
+LevelB*    g_level_b;
+LevelC*    g_level_c;
+int        g_player_lives = 3;
+Entity*    g_player;
+GLuint     g_heart_spritesheet;
+Entity*    g_hearts;  // rendering hearts on screen
+GLuint     g_fontsheet_texture_id;
+GameStatus g_game_status = RUNNING;
 // Entity*      g_enemies;
 
 SDL_Window* g_display_window;
@@ -114,8 +119,8 @@ void initialize() {
     g_fontsheet_texture_id = Utility::load_texture("assets/fonts/font1.png");
 
     // Set up player
-    g_player = new Entity();
-    g_player->set_entity_type(PLAYER);
+    g_player = new Entity(PLAYER);
+    // g_player->set_entity_type();
     g_player->set_position(glm::vec3(36.0f, -15.0f, 0.0f));
     g_player->set_movement(glm::vec3(0.0f));
     g_player->set_speed(3.5f);
@@ -123,12 +128,7 @@ void initialize() {
     g_player->m_texture_id = Utility::load_texture("assets/images/DarkSamurai (64x64).png");
 
     // Walking
-    g_player->m_animations[g_player->WALK] = new int[8]{14, 15, 16, 17, 18, 19, 20};
-    // g_player->m_animations[g_player->LEFT] = new int[4] { 1, 5, 9, 13 };
-    // g_player->m_animations[g_player->RIGHT] = new int[4]{3, 7, 11, 15};
-    // g_player->m_animations[g_player->UP]    = new int[4]{2, 6, 10, 14};
-    // g_player->m_animations[g_player->DOWN]  = new int[4]{0, 4, 8, 12};
-
+    g_player->m_animations[g_player->WALK]     = new int[8]{14, 15, 16, 17, 18, 19, 20};
     g_player->m_animations[g_player->IDLE]     = new int[8]{0, 1, 2, 3, 4, 5, 6, 7};
     g_player->m_animations[g_player->ATTACK_1] = new int[4]{28, 29, 30, 31};
     g_player->m_animations[g_player->ATTACK_2] = new int[4]{42, 43, 44, 45};
@@ -137,16 +137,20 @@ void initialize() {
     g_player->m_animations[g_player->HIT]      = new int[2]{84, 85};
     g_player->m_animations[g_player->DIE]      = new int[14]{98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111};
 
-    g_player->m_animation_indices = g_player->m_animations[g_player->WALK];  // start George looking left
-    g_player->m_animation_frames  = 4;
-    g_player->m_animation_index   = 0;
-    g_player->m_animation_time    = 0.0f;
-    g_player->m_animation_cols    = 14;
-    g_player->m_animation_rows    = 8;
+    // g_player->m_animation_indices = g_player->m_animations[g_player->WALK];  // start George looking left
+    // g_player->move_left();
+    g_player->set_curr_state(g_player->WALK_LEFT);
+    g_player->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
+    // g_player->m_animation_frames  = 4;
+    g_player->m_animation_index = 0;
+    g_player->m_animation_time  = 0.0f;
+    g_player->m_animation_cols  = 14;
+    g_player->m_animation_rows  = 8;
     g_player->set_height(1.2f);
     g_player->set_width(0.6f);
     g_player->set_scale(2.8f);
     g_player->m_jumping_power = 8.0f;
+    // g_player->m_lives         = g_player_lives;
 
     // ————— LEVEL SETUP ————— //
     g_level_menu = new LevelMenu();
@@ -154,7 +158,7 @@ void initialize() {
     g_level_b    = new LevelB();
     g_level_c    = new LevelC();
     // switch_to_scene(g_level_menu);  // todo: change this back to menu
-    switch_to_scene(g_level_b);
+    switch_to_scene(g_level_c);
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -173,6 +177,36 @@ void initialize() {
 void process_input() {
     if (g_current_scene != g_level_menu) {
         g_current_scene->m_state.player->set_movement(glm::vec3(0.0f));
+    }
+
+    // ————— KEY HOLD ————— //
+    const Uint8* key_state = SDL_GetKeyboardState(NULL);
+
+    if (g_current_scene != g_level_menu && g_game_status == RUNNING) {
+        if (key_state[SDL_SCANCODE_LEFT] || key_state[SDL_SCANCODE_A]) {
+            // g_current_scene->m_state.player->move_left();
+            g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->WALK_LEFT);
+            g_current_scene->m_state.player->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
+        } else if (key_state[SDL_SCANCODE_RIGHT] || key_state[SDL_SCANCODE_D]) {
+            g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->WALK_RIGHT);
+            g_current_scene->m_state.player->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+            // g_current_scene->m_state.player->move_right();
+        } else if (key_state[SDL_SCANCODE_UP] || key_state[SDL_SCANCODE_W]) {
+            g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->WALK_UP);
+            g_current_scene->m_state.player->set_movement(glm::vec3(0.0f, 1.0f, 0.0f));
+            // g_current_scene->m_state.player->move_up();
+        } else if (key_state[SDL_SCANCODE_DOWN] || key_state[SDL_SCANCODE_S]) {
+            g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->WALK_DOWN);
+            g_current_scene->m_state.player->set_movement(glm::vec3(0.0f, -1.0f, 0.0f));
+            // g_current_scene->m_state.player->move_down();
+        } else {
+            // g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->IDLE);
+        }
+
+        // ————— NORMALISATION ————— //
+        if (glm::length(g_current_scene->m_state.player->get_movement()) > 1.0f) {
+            g_current_scene->m_state.player->set_movement(glm::normalize(g_current_scene->m_state.player->get_movement()));
+        }
     }
 
     SDL_Event event;
@@ -195,7 +229,7 @@ void process_input() {
                     case SDLK_SPACE:
                         // case SDLK_UP:
                         // ————— JUMPING ————— //
-                        if (g_current_scene != g_level_menu) {
+                        if (g_current_scene != g_level_menu && g_game_status == RUNNING) {
                             if (g_current_scene->m_state.player->m_collided_bottom) {
                                 g_current_scene->m_state.player->m_is_jumping = true;
                                 Mix_PlayChannel(-1, g_current_scene->m_state.jump_sfx, 0);
@@ -203,9 +237,19 @@ void process_input() {
                         }
                         break;
 
+                    case SDLK_e:
+                        // attack
+                        if (g_current_scene != g_level_menu && g_game_status == RUNNING) {
+                            // g_current_scene->m_state.player->attack_1();
+                            std::cout << "\n\n\n\nAttacking\n\n\n\n"
+                                      << std::endl;
+                            g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->ATTACK_1);
+                        }
+                        break;
+
                     case SDLK_RETURN:
                         // ————— SWITCHING SCENES ————— //
-                        if (g_current_scene == g_level_menu) {
+                        if (g_current_scene == g_level_menu && g_game_status == RUNNING) {
                             switch_to_scene(g_level_a);
                         }
                         break;
@@ -215,30 +259,6 @@ void process_input() {
 
             default:
                 break;
-        }
-    }
-
-    // ————— KEY HOLD ————— //
-    const Uint8* key_state = SDL_GetKeyboardState(NULL);
-
-    if (g_current_scene != g_level_menu) {
-        if (key_state[SDL_SCANCODE_LEFT]) {
-            g_current_scene->m_state.player->move_left();
-            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->LEFT];
-        } else if (key_state[SDL_SCANCODE_RIGHT]) {
-            g_current_scene->m_state.player->move_right();
-            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->RIGHT];
-        } else if (key_state[SDL_SCANCODE_UP]) {
-            g_current_scene->m_state.player->move_up();
-            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->UP];
-        } else if (key_state[SDL_SCANCODE_DOWN]) {
-            g_current_scene->m_state.player->move_down();
-            // g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_animations[g_current_scene->m_state.player->DOWN];
-        }
-
-        // ————— NORMALISATION ————— //
-        if (glm::length(g_current_scene->m_state.player->get_movement()) > 1.0f) {
-            g_current_scene->m_state.player->set_movement(glm::normalize(g_current_scene->m_state.player->get_movement()));
         }
     }
 }
@@ -259,6 +279,19 @@ void update() {
     while (delta_time >= FIXED_TIMESTEP) {
         // ————— UPDATING THE SCENE (i.e. map, character, enemies...) ————— //
         g_current_scene->update(FIXED_TIMESTEP);
+
+        if (g_current_scene->m_state.player->m_hit) {
+            g_player_lives--;
+            g_current_scene->m_state.player->m_hit = false;
+        }
+
+        if (g_player_lives <= 0) {
+            g_game_status = LOSE;
+        }
+
+        if (g_current_scene->m_state.player->m_got_flag) {
+            g_game_status = WIN;
+        }
 
         delta_time -= FIXED_TIMESTEP;
     }
@@ -286,8 +319,6 @@ void update() {
     // ————— PLAYER CAMERA ————— //
     g_view_matrix = glm::mat4(1.0f);
 
-    // float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, -36.0f, 36.0f);
-    // float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -36.0f, 36.0f);
     if (g_current_scene != g_level_menu) {
         // std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
         // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
@@ -295,13 +326,6 @@ void update() {
         float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-x_clamp, -y_clamp, 0));
-        // if (g_current_scene->m_state.player->get_position().x > LEVEL1_LEFT_EDGE) {
-        //         std::cout << "Player position: " << g_current_scene->m_state.player->get_position().x << std::endl;
-        //         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->m_state.player->get_position().x, -g_current_scene->m_state.player->get_position().y, 0));
-        //         // g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->m_state.player->get_position().x, 3.75, 0));
-        //     } else {
-        //         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5*2, 3.75*2, 0));
-        //     }
     }
 }
 
@@ -313,13 +337,24 @@ void render() {
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
     g_current_scene->render(&g_shader_program);
 
+    float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
+    float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
     if (g_current_scene != g_level_menu) {
         // render hearts
-        float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
-        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 
-        Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "Current lives: " + std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - 10.5f, y_clamp + 5.5f, 0.0f));
+        Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "Current lives: " + std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - (15.0f * VIEW_SCALE), y_clamp + (8.0f * VIEW_SCALE), 0.0f));
         // Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - 7.0f, y_clamp + 5.5f, 0.0f));
+    }
+
+    // render win/lose text
+    if (g_game_status == WIN) {
+        // glm::vec3 position = g_current_scene->m_state.player->get_position();
+        Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "You win!", 1.5f, -0.7f, glm::vec3(x_clamp - 3.0f, y_clamp + 4.0f, 0.0f));
+        std::cout << "You win!\n";
+    } else if (g_game_status == LOSE) {
+        // glm::vec3 position = g_current_scene->m_state.player->get_position();
+        Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "You lose!", 1.5f, -0.7f, glm::vec3(x_clamp - 3.5f, y_clamp + 4.0f, 0.0f));
+        std::cout << "You lose!\n";
     }
 
     SDL_GL_SwapWindow(g_display_window);

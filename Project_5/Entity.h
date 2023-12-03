@@ -5,7 +5,8 @@
 
 enum EntityType { PLATFORM,
                   PLAYER,
-                  ENEMY };
+                  ENEMY,
+                  FLAG };
 enum AIType { WALKER,
               GUARD,
               PATROLLER,
@@ -49,7 +50,7 @@ class Entity {
     float m_width  = 1;
     float m_height = 1;
 
-    float invulnerability_time = 1.0f * (2.0f / 3.0f);
+    const float INVULNERABILITY_TIME = 1.0f * (2.0f / 3.0f);
 
    public:
     // patrol bounds
@@ -65,7 +66,11 @@ class Entity {
                      JUMP              = 4,
                      FALL              = 5,
                      HIT               = 6,
-                     DIE               = 7;
+                     DIE               = 7,
+                     WALK_LEFT         = 8,
+                     WALK_RIGHT        = 9,
+                     WALK_UP           = 10,
+                     WALK_DOWN         = 11;
 
     // ————— ANIMATION ————— //
     int** m_animations = new int* [8] {
@@ -87,6 +92,8 @@ class Entity {
     int*  m_animation_indices = NULL;
     float m_animation_time    = 0.0f;
 
+    int m_curr_state;
+
     // ––––– PHYSICS (JUMPING) ––––– //
     bool  m_is_jumping    = false;
     float m_jumping_power = 0;
@@ -99,9 +106,12 @@ class Entity {
 
     GLuint m_texture_id;
 
-    // Hit status
-    bool  m_hit                  = false;                 // Has the player been hit by an enemy?
-    float m_invulnerability_time = invulnerability_time;  // How long until the player can be hit again?
+    // health stuff
+    bool  m_hit                  = false;  // Has the player been hit by an enemy?
+    float m_invulnerability_time = 0.0f;   // How long until the player can be hit again?
+
+    // flag
+    bool m_got_flag = false;
 
     // ————— METHODS ————— //
     Entity();
@@ -109,7 +119,7 @@ class Entity {
     ~Entity();
 
     void draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index);
-    void update(float delta_time, Entity* player, Entity* objects, int object_count, Map* map);  // Now, update should check for both objects in the game AND the map
+    void update(float delta_time, Entity* player, Entity* objects, int object_count, Entity* collectables, int collectable_count, Map* map);  // Now, update should check for both objects in the game AND the map
     void render(ShaderProgram* program);
 
     bool const check_collision(Entity* other) const;
@@ -119,65 +129,6 @@ class Entity {
     // Overloading our methods to check for only the map
     void const check_collision_y(Map* map);
     void const check_collision_x(Map* map);
-
-    void idle() {
-        m_movement.x        = 0.0f;
-        m_movement.y        = 0.0f;
-        m_animation_indices = m_animations[IDLE];
-    }
-
-    void attack_1() {
-        m_movement.x        = 0.0f;
-        m_movement.y        = 0.0f;
-        m_animation_indices = m_animations[ATTACK_1];
-    }
-
-    void attack_2() {
-        m_movement.x        = 0.0f;
-        m_movement.y        = 0.0f;
-        m_animation_indices = m_animations[ATTACK_2];
-    }
-
-    void jump() {
-        m_movement.y        = 1.0f;
-        m_animation_indices = m_animations[JUMP];
-    }
-
-    void fall() {
-        m_movement.y        = -1.0f;
-        m_animation_indices = m_animations[FALL];
-    }
-
-    void hit() {
-        m_movement.x        = 0.0f;
-        m_movement.y        = 0.0f;
-        m_animation_indices = m_animations[HIT];
-    }
-
-    void die() {
-        m_movement.x        = 0.0f;
-        m_movement.y        = 0.0f;
-        m_animation_indices = m_animations[DIE];
-    }
-
-    void move_left() {
-        m_movement.x        = -1.0f;
-        m_flip              = 1;
-        m_animation_indices = m_animations[WALK];
-    };
-    void move_right() {
-        m_movement.x        = 1.0f;
-        m_flip              = 0;
-        m_animation_indices = m_animations[WALK];
-    };
-    void move_up() {
-        m_movement.y        = 1.0f;
-        m_animation_indices = m_animations[WALK];
-    };
-    void move_down() {
-        m_movement.y        = -1.0f;
-        m_animation_indices = m_animations[WALK];
-    };
 
     void ai_activate(Entity* player);
     void ai_walk();
@@ -202,6 +153,7 @@ class Entity {
     int const        get_height() const { return m_height; };
     float const      get_scale() const { return m_scale; };
     bool const       get_is_alive() const { return m_is_alive; };
+    int const        get_curr_state() const { return m_curr_state; };
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
@@ -217,4 +169,5 @@ class Entity {
     void const set_height(float new_height) { m_height = new_height; };
     void const set_scale(float new_scale) { m_scale = new_scale; };
     void const set_is_alive(bool new_is_alive) { m_is_alive = new_is_alive; };
+    void const set_curr_state(int new_state);
 };

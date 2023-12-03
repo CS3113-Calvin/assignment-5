@@ -16,19 +16,18 @@ void LevelB::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_B_DATA, map_texture_id, 1.0f, 12, 32);
 
     m_state.player = player;
-    m_state.player->set_position(glm::vec3(37, player->get_position().y, 0));
-    m_state.player->move_left();
+    m_state.player->set_position(glm::vec3(36, player->get_position().y, 0));
+    // m_state.player->move_left();
 
     m_state.enemies    = new Entity[ENEMY_COUNT];
-    Entity* enemy_1    = new Entity(ENEMY);
-    m_state.enemies[0] = *enemy_1;
+    // m_state.enemies[0] = new Entity(ENEMY);
 }
 
 void LevelB::update(float delta_time) {
-    m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
+    m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, NULL, 0, m_state.map);
 
     for (int i = 0; i < ENEMY_COUNT; i++) {
-        m_state.enemies[i].update(delta_time, m_state.player, 0, 0, m_state.map);
+        m_state.enemies[i].update(delta_time, m_state.player, 0, 0, NULL, 0, m_state.map);
     }
 }
 
