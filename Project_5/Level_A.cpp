@@ -16,7 +16,7 @@ LevelA::~LevelA() {
     Mix_FreeMusic(m_state.bgm);
 }
 
-void LevelA::initialize(Entity* player) {
+void LevelA::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     GLuint map_texture_id = Utility::load_texture("assets/images/Cavernas_by_Adam_Saltsman.png");
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_A_DATA, map_texture_id, 1.0f, 12, 32);
 
@@ -28,7 +28,8 @@ void LevelA::initialize(Entity* player) {
     m_state.enemies = new Entity[ENEMY_COUNT];
     m_state.enemies[0].set_entity_type(ENEMY);
     m_state.enemies[0].set_ai_type(GUARD);
-    m_state.enemies[0].set_ai_state(IDLE);
+    m_state.enemies[0].set_ai_state(AI_IDLE);
+    // m_state.enemies[0].set_ai_state(IDLE);
     m_state.enemies[0].m_texture_id = enemy_texture_id;
     m_state.enemies[0].set_position(glm::vec3(8.0f, 0.0f, 0.0f));
     m_state.enemies[0].set_movement(glm::vec3(0.0f));

@@ -57,6 +57,10 @@ LevelB*      g_level_b;
 LevelC*      g_level_c;
 unsigned int g_player_lives = 3;
 Entity*      g_player;
+GLuint       g_heart_spritesheet;
+Entity*      g_hearts;  // rendering hearts on screen
+GLuint       g_fontsheet_texture_id;
+// Entity*      g_enemies;
 
 SDL_Window* g_display_window;
 bool        g_game_is_running = true;
@@ -69,7 +73,7 @@ float g_accumulator    = 0.0f;
 
 void switch_to_scene(Scene* scene) {
     g_current_scene = scene;
-    g_current_scene->initialize(g_player);
+    g_current_scene->initialize(g_player, g_fontsheet_texture_id);
 }
 
 void initialize() {
@@ -103,6 +107,12 @@ void initialize() {
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
 
+    // Set up hearts texture
+    g_heart_spritesheet = Utility::load_texture("assets/images/Hearts.png");
+
+    // Set up fontsheet
+    g_fontsheet_texture_id = Utility::load_texture("assets/fonts/font1.png");
+
     // Set up player
     g_player = new Entity();
     g_player->set_entity_type(PLAYER);
@@ -123,7 +133,7 @@ void initialize() {
     g_player->m_animations[g_player->ATTACK_1] = new int[4]{28, 29, 30, 31};
     g_player->m_animations[g_player->ATTACK_2] = new int[4]{42, 43, 44, 45};
     g_player->m_animations[g_player->JUMP]     = new int[4]{56, 57, 58, 59};
-    g_player->m_animations[g_player->FALL]      = new int[4]{70, 71, 72, 73};
+    g_player->m_animations[g_player->FALL]     = new int[4]{70, 71, 72, 73};
     g_player->m_animations[g_player->HIT]      = new int[2]{84, 85};
     g_player->m_animations[g_player->DIE]      = new int[14]{98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111};
 
@@ -258,12 +268,12 @@ void update() {
     // Update scene if player crosses bounds
     if (g_current_scene == g_level_a) {
         // left edge
-        if (g_current_scene->m_state.player->get_position().x < LEVEL1_LEFT_EDGE) {
+        if (g_current_scene->m_state.player->get_position().x < LEVEL1_LEFT_EDGE + g_current_scene->m_state.player->get_width() / 2.0f) {
             switch_to_scene(g_level_b);
         }
     } else if (g_current_scene == g_level_b) {
         // bottom edge
-        if (g_current_scene->m_state.player->get_position().y < LEVEL2_BOTTOM_EDGE) {
+        if (g_current_scene->m_state.player->get_position().y < LEVEL2_BOTTOM_EDGE + g_current_scene->m_state.player->get_height() / 2.0f) {
             switch_to_scene(g_level_c);
         }
     } else if (g_current_scene == g_level_c) {
@@ -279,8 +289,8 @@ void update() {
     // float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, -36.0f, 36.0f);
     // float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -36.0f, 36.0f);
     if (g_current_scene != g_level_menu) {
-        std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
-        std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
+        // std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
+        // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
         float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
         float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 
@@ -302,6 +312,15 @@ void render() {
 
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
     g_current_scene->render(&g_shader_program);
+
+    if (g_current_scene != g_level_menu) {
+        // render hearts
+        float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
+        float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
+
+        Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "Current lives: " + std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - 10.5f, y_clamp + 5.5f, 0.0f));
+        // Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - 7.0f, y_clamp + 5.5f, 0.0f));
+    }
 
     SDL_GL_SwapWindow(g_display_window);
 }

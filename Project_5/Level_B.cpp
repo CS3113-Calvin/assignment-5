@@ -11,12 +11,17 @@ std::pair<int, int> LEVEL_B_DATA[] = {
 LevelB::~LevelB() {
 }
 
-void LevelB::initialize(Entity* player) {
+void LevelB::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     GLuint map_texture_id = Utility::load_texture("assets/images/Cavernas_by_Adam_Saltsman.png");
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_B_DATA, map_texture_id, 1.0f, 12, 32);
 
     m_state.player = player;
     m_state.player->set_position(glm::vec3(37, player->get_position().y, 0));
+    m_state.player->move_left();
+
+    m_state.enemies    = new Entity[ENEMY_COUNT];
+    Entity* enemy_1    = new Entity(ENEMY);
+    m_state.enemies[0] = *enemy_1;
 }
 
 void LevelB::update(float delta_time) {

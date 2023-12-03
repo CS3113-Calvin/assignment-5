@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Map.h"
+#include "Utility.h"
 
 enum EntityType { PLATFORM,
                   PLAYER,
@@ -9,9 +10,9 @@ enum AIType { WALKER,
               GUARD,
               PATROLLER,
               JUMPER };
-enum AIState { WALKING,
-               IDLE,
-               ATTACKING };
+enum AIState { AI_WALK,
+               AI_IDLE,
+               AI_ATTACK };
 
 class Entity {
    private:
@@ -104,6 +105,7 @@ class Entity {
 
     // ————— METHODS ————— //
     Entity();
+    Entity(EntityType entity_type);
     ~Entity();
 
     void draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index);

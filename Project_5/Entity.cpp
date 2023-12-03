@@ -36,6 +36,35 @@ Entity::Entity() {
     m_model_matrix = glm::mat4(1.0f);
 }
 
+Entity::Entity(EntityType entity_type) {
+    // ––––– PHYSICS ––––– //
+    m_position     = glm::vec3(0.0f);
+    m_velocity     = glm::vec3(0.0f);
+    m_acceleration = glm::vec3(0.0f);
+
+    // ––––– TRANSLATION ––––– //
+    m_movement     = glm::vec3(0.0f);
+    m_speed        = 0;
+    m_model_matrix = glm::mat4(1.0f);
+
+    if (entity_type == ENEMY) {
+        // m_entity_type = ENEMY;
+        // m_ai_type     = WALKER;
+        // m_ai_state    = WALKING;
+        /* Enemies' stuff */
+        GLuint enemy_texture_id = Utility::load_texture("assets/images/soph.png");
+
+        set_entity_type(ENEMY);
+        set_ai_type(GUARD);
+        set_ai_state(AI_IDLE);
+        m_texture_id = enemy_texture_id;
+        set_position(glm::vec3(30.0f, -27.0f, 0.0f));
+        set_movement(glm::vec3(0.0f));
+        set_speed(1.0f);
+        set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    }
+}
+
 Entity::~Entity() {
     delete[] m_animation_attack_1;
     delete[] m_animations;
@@ -131,11 +160,14 @@ void Entity::ai_walk() {
 
 void Entity::ai_guard(Entity* player) {
     switch (m_ai_state) {
-        case IDLE:
-            if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
+        case AI_IDLE:
+        // case IDLE:
+            // if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
+            if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = AI_WALK;
             break;
 
-        case WALKING:
+        case AI_WALK:
+        // case WALKING:
             if (m_position.x > player->get_position().x) {  // move left
                 m_movement          = glm::vec3(-1.0f, 0.0f, 0.0f);
                 m_animation_indices = m_animations[WALK];
@@ -147,7 +179,8 @@ void Entity::ai_guard(Entity* player) {
             }
             break;
 
-        case ATTACKING:
+        // case ATTACKING:
+        case AI_ATTACK:
             break;
 
         default:
@@ -231,10 +264,19 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
     // We make two calls to our check_collision methods, one for the collidable objects and one for
     // the map.
     m_position.y += m_velocity.y * delta_time;
+    // clamp y position to map
+    std::cout << "Player position y: " << m_position.x << std::endl;
+    m_position.y = glm::clamp(m_position.y, -map->get_height() + m_height / 2.0f, 0.0f - m_height / 2.0f);
+
     check_collision_y(map);
     check_collision_y(objects, object_count);
 
     m_position.x += m_velocity.x * delta_time;
+    // std::cout << "Map width: " << map->get_width() << std::endl;
+    // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
+    m_position.x = glm::clamp(m_position.x, 0.0f + m_width / 2.0f, map->get_width() - m_width / 2.0f);
+    // std::cout << "Player position x after clamp: " << m_position.x << std::endl;
+
     check_collision_x(map);
     check_collision_x(objects, object_count);
 

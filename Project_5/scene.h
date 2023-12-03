@@ -27,7 +27,7 @@ struct GameState {
     Entity *player;
     Entity *enemies;
     Entity *collectables;
-    // GLuint  fontsheet_texture_id;
+    GLuint  fontsheet_texture_id;
 
     // ————— AUDIO ————— //
     Mix_Music *bgm;
@@ -45,9 +45,9 @@ class Scene {
     GameState m_state;
 
     // ————— METHODS ————— //
-    virtual void initialize(Entity *player)     = 0;
-    virtual void update(float delta_time)       = 0;
-    virtual void render(ShaderProgram *program) = 0;
+    virtual void initialize(Entity *player, GLuint g_fontsheet_texture_id) = 0;
+    virtual void update(float delta_time)                                  = 0;
+    virtual void render(ShaderProgram *program)                            = 0;
 
     // ————— GETTERS ————— //
     GameState const get_state() const { return m_state; }

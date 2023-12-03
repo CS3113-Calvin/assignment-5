@@ -11,7 +11,7 @@ std::pair<int, int> LEVEL_C_DATA[] = {
 LevelC::~LevelC() {
 }
 
-void LevelC::initialize(Entity* player) {
+void LevelC::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     GLuint map_texture_id = Utility::load_texture("assets/images/Cavernas_by_Adam_Saltsman.png");
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_C_DATA, map_texture_id, 1.0f, 12, 32);
 
@@ -19,7 +19,6 @@ void LevelC::initialize(Entity* player) {
     m_state.player->set_position(glm::vec3(player->get_position().x, -1.0f, 0));
 
     // Treasure chest (9, -19)
-
 }
 
 void LevelC::update(float delta_time) {

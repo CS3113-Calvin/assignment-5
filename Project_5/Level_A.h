@@ -1,15 +1,15 @@
 #include "Scene.h"
 
 class LevelA : public Scene {
-public:
+   public:
     // ————— STATIC ATTRIBUTES ————— //
     int ENEMY_COUNT = 1;
-    
+
     // ————— CONSTRUCTOR ————— //
     ~LevelA();
-    
+
     // ————— METHODS ————— //
-    void initialize(Entity* player) override;
+    void initialize(Entity* player, GLuint g_fontsheet_texture_id) override;
     void update(float delta_time) override;
-    void render(ShaderProgram *program) override;
+    void render(ShaderProgram* program) override;
 };
