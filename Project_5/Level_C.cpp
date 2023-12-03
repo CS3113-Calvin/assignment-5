@@ -16,8 +16,8 @@ void LevelC::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     m_state.map           = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_C_DATA, map_texture_id, 1.0f, 12, 32);
 
     m_state.player = player;
-    // m_state.player->set_position(glm::vec3(player->get_position().x, -1.0f, 0));
-    m_state.player->set_position(glm::vec3(11.0f, -23.0f, 0));
+    m_state.player->set_position(glm::vec3(player->get_position().x, -1.0f, 0));
+    // m_state.player->set_position(glm::vec3(11.0f, -23.0f, 0));
 
     // Treasure chest (9, -19)
     m_state.collectables = new Entity[1];
@@ -33,6 +33,10 @@ void LevelC::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     m_state.collectables[0].set_height(1.0f);
     m_state.collectables[0].set_scale(1.0f);
     m_state.collectables[0].update(0.0f, m_state.player, NULL, 0, NULL, 0, m_state.map);
+
+    // enemies
+    m_state.enemies = new Entity[ENEMY_COUNT];
+    m_state.enemies[0].set_position(glm::vec3(13.0f, -23.0f, 0.0f));
 }
 
 void LevelC::update(float delta_time) {

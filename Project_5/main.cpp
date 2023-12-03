@@ -157,8 +157,8 @@ void initialize() {
     g_level_a    = new LevelA();
     g_level_b    = new LevelB();
     g_level_c    = new LevelC();
-    // switch_to_scene(g_level_menu);  // todo: change this back to menu
-    switch_to_scene(g_level_c);
+    switch_to_scene(g_level_menu);  // todo: change this back to menu
+    // switch_to_scene(g_level_a);
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -241,8 +241,8 @@ void process_input() {
                         // attack
                         if (g_current_scene != g_level_menu && g_game_status == RUNNING) {
                             // g_current_scene->m_state.player->attack_1();
-                            std::cout << "\n\n\n\nAttacking\n\n\n\n"
-                                      << std::endl;
+                            // std::cout << "\n\n\n\nAttacking\n\n\n\n"
+                            //           << std::endl;
                             g_current_scene->m_state.player->set_curr_state(g_current_scene->m_state.player->ATTACK_1);
                         }
                         break;
@@ -264,6 +264,11 @@ void process_input() {
 }
 
 void update() {
+    // dont update if on menu
+    if (g_current_scene == g_level_menu) {
+        return;
+    }
+
     // ————— DELTA TIME / FIXED TIME STEP CALCULATION ————— //
     float ticks      = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
@@ -320,8 +325,6 @@ void update() {
     g_view_matrix = glm::mat4(1.0f);
 
     if (g_current_scene != g_level_menu) {
-        // std::cout << "Player position x: " << g_current_scene->m_state.player->get_position().x << std::endl;
-        // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
         float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
         float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
 
@@ -337,22 +340,24 @@ void render() {
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
     g_current_scene->render(&g_shader_program);
 
+    // dont render further if menu
+    if (g_current_scene == g_level_menu) {
+        SDL_GL_SwapWindow(g_display_window);
+        return;
+    }
+
     float x_clamp = glm::clamp(g_current_scene->m_state.player->get_position().x, 0 + (16.0f * VIEW_SCALE), 37.0f - (16.0f * VIEW_SCALE));
     float y_clamp = glm::clamp(g_current_scene->m_state.player->get_position().y, -37.0f + (9.0f * VIEW_SCALE), 0 - (9.0f * VIEW_SCALE));
     if (g_current_scene != g_level_menu) {
         // render hearts
-
         Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "Current lives: " + std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - (15.0f * VIEW_SCALE), y_clamp + (8.0f * VIEW_SCALE), 0.0f));
-        // Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, std::to_string(g_player_lives), 0.5f, -0.25f, glm::vec3(x_clamp - 7.0f, y_clamp + 5.5f, 0.0f));
     }
 
     // render win/lose text
     if (g_game_status == WIN) {
-        // glm::vec3 position = g_current_scene->m_state.player->get_position();
         Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "You win!", 1.5f, -0.7f, glm::vec3(x_clamp - 3.0f, y_clamp + 4.0f, 0.0f));
         std::cout << "You win!\n";
     } else if (g_game_status == LOSE) {
-        // glm::vec3 position = g_current_scene->m_state.player->get_position();
         Utility::draw_text(&g_shader_program, g_fontsheet_texture_id, "You lose!", 1.5f, -0.7f, glm::vec3(x_clamp - 3.5f, y_clamp + 4.0f, 0.0f));
         std::cout << "You lose!\n";
     }

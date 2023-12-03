@@ -49,11 +49,9 @@ Entity::Entity() {
     m_scale                 = 0.7f;
     m_width                 = 0.7f;
     m_height                = 0.7f;
-    // set_entity_type(ENEMY);
     set_ai_type(GUARD);
     set_ai_state(AI_IDLE);
     m_texture_id = enemy_texture_id;
-    set_position(glm::vec3(30.0f, -26.0f, 0.0f));
     set_movement(glm::vec3(1.0f));
     set_speed(1.0f);
     set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
@@ -351,6 +349,10 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
         }
     }
 
+    if (m_entity_type == ENEMY) {
+        m_velocity += m_acceleration * delta_time;
+    }
+
     if (m_animation_indices != NULL) {
         m_animation_time += delta_time;
         if (m_entity_type == PLAYER) {
@@ -397,7 +399,7 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
     m_position.x += m_velocity.x * delta_time;
     // std::cout << "Map width: " << map->get_width() << std::endl;
     // std::cout << "Player position y: " << g_current_scene->m_state.player->get_position().y << std::endl;
-    m_position.x = glm::clamp(m_position.x, 0.0f + m_width / 2.0f, map->get_width() - m_width / 2.0f);
+    m_position.x = glm::clamp(m_position.x, 0.0f + m_width / 2.0f - 1.0f, map->get_width() - m_width / 2.0f);
     // std::cout << "Player position x after clamp: " << m_position.x << std::endl;
 
     check_collision_x(map);

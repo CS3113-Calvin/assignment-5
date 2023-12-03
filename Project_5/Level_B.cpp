@@ -20,7 +20,7 @@ void LevelB::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     // m_state.player->move_left();
 
     m_state.enemies    = new Entity[ENEMY_COUNT];
-    // m_state.enemies[0] = new Entity(ENEMY);
+    m_state.enemies[0].set_position(glm::vec3(30.0f, -26.0f, 0.0f));
 }
 
 void LevelB::update(float delta_time) {

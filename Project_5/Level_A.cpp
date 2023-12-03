@@ -26,15 +26,7 @@ void LevelA::initialize(Entity* player, GLuint g_fontsheet_texture_id) {
     GLuint enemy_texture_id = Utility::load_texture("assets/images/soph.png");
 
     m_state.enemies = new Entity[ENEMY_COUNT];
-    m_state.enemies[0].set_entity_type(ENEMY);
-    m_state.enemies[0].set_ai_type(GUARD);
-    m_state.enemies[0].set_ai_state(AI_IDLE);
-    // m_state.enemies[0].set_ai_state(IDLE);
-    m_state.enemies[0].m_texture_id = enemy_texture_id;
-    m_state.enemies[0].set_position(glm::vec3(8.0f, 0.0f, 0.0f));
-    m_state.enemies[0].set_movement(glm::vec3(0.0f));
-    m_state.enemies[0].set_speed(1.0f);
-    m_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    m_state.enemies[0].set_position(glm::vec3(21.0f, -20.0f, 0.0f));
 
     /**
      BGM and SFX
